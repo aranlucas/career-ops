@@ -31,11 +31,13 @@ empty default. (`web/src/lib/portals-config.mjs` is the worked example.)
 
 Logic that deserves a test lives in a plain `.mjs` module so `node --test` can import
 it with no build step and no `@/` alias loader. See `tracker-table.mjs`,
-`cv-selection.mjs`, `report-sections.mjs`. A component is not a place to put a rule
-you want to assert.
+`cv-selection.mjs`, `report-sections.mjs`. Use Vitest and React Testing Library for
+rendered synchronous components. Keep async Server Component coverage in E2E tests.
 
 ```
-npm test          # node --test "tests/**/*.test.mjs"
+npm test          # Vitest component/unit tests
+npm run test:node # node --test "tests/**/*.test.mjs"
+npm run test:all  # Vitest plus Node tests
 npm run typecheck # tsc --noEmit
 npm run dev       # the app, reading the sibling career-ops files
 ```
