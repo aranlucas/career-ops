@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 
 // Imports the REAL implementation from src/lib/cli-pick.mjs. This suite used to
 // hold a hand-copied mirror of pickSoleInstalled, which cannot fail when the

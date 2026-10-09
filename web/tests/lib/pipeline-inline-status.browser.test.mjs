@@ -8,12 +8,12 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { test } from "node:test";
+import { onTestFinished, test } from "vitest";
 
 const url = process.env.PIPELINE_STATUS_TEST_URL;
 const root = process.env.PIPELINE_STATUS_TEST_ROOT;
 
-test("inline Pipeline status browser flow (disposable data only)", { skip: !url || !root, timeout: 120_000 }, async (t) => {
+test.skipIf(!url || !root)("inline Pipeline status browser flow (disposable data only)", { timeout: 120_000 }, async () => {
   const origin = new URL(url);
   assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(origin.hostname));
   const relative = path.relative(os.tmpdir(), fs.realpathSync(root));
@@ -24,7 +24,7 @@ test("inline Pipeline status browser flow (disposable data only)", { skip: !url 
   assert.ok(initial.includes("Fixture Alpha") && initial.includes("Fixture Beta") && initial.includes("Fixture Gamma"));
   const { chromium } = await import("playwright-core");
   const browser = await chromium.launch({ channel: "chrome", headless: true });
-  t.after(() => browser.close());
+  onTestFinished(() => browser.close());
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -49,12 +49,21 @@ test("inline Pipeline status browser flow (disposable data only)", { skip: !url 
     }
   }
 
+  async function scenario(_name, run) {
+    const cleanups = [];
+    try {
+      await run((cleanup) => cleanups.push(cleanup));
+    } finally {
+      for (const cleanup of cleanups.reverse()) await cleanup();
+    }
+  }
+
   await page.goto(`${origin.origin}/pipeline?tab=ALL`);
   await edit(11).waitFor();
   assert.equal(await page.locator("tbody tr").count(), 3);
   assert.equal(await page.getByRole("button", { name: /^Edit status/ }).count(), 3);
 
-  await t.test("pencil, Cancel, Escape and same-value selection do not write", async () => {
+  await scenario("pencil, Cancel, Escape and same-value selection do not write", async (onScenarioFinished) => {
     await edit(11).focus();
     await page.keyboard.press("Enter");
     assert.equal(await select(11).evaluate((element) => document.activeElement === element), true);
@@ -70,7 +79,7 @@ test("inline Pipeline status browser flow (disposable data only)", { skip: !url 
     assert.equal(fs.readFileSync(tracker, "utf8"), initial);
   });
 
-  await t.test("sorting preserves the open editor and other rows remain usable", async () => {
+  await scenario("sorting preserves the open editor and other rows remain usable", async (onScenarioFinished) => {
     await edit(11).click();
     await page.getByRole("button", { name: "company", exact: true }).click();
     await page.waitForURL(/sort=company/);
@@ -79,7 +88,7 @@ test("inline Pipeline status browser flow (disposable data only)", { skip: !url 
     await select(11).press("Escape");
   });
 
-  await t.test("failed save disables its controls, then rolls back with an accessible error", async () => {
+  await scenario("failed save disables its controls, then rolls back with an accessible error", async (onScenarioFinished) => {
     let release;
     const gate = new Promise((resolve) => { release = resolve; });
     await page.route("**/api/status", async (route) => {
@@ -101,14 +110,14 @@ test("inline Pipeline status browser flow (disposable data only)", { skip: !url 
     await page.unroute("**/api/status");
   });
 
-  await t.test("confirmed save updates filtered rows/counts before refresh, then persists", async (subtest) => {
+  await scenario("confirmed save updates filtered rows/counts before refresh, then persists", async (onScenarioFinished) => {
     await tab("EVALUATED").click();
     await page.waitForURL(/tab=EVALUATED/);
     await edit(11).waitFor();
     let release;
     let held = false;
     const gate = new Promise((resolve) => { release = resolve; });
-    subtest.after(async () => { release(); await page.unrouteAll({ behavior: "wait" }); });
+    onScenarioFinished(async () => { release(); await page.unrouteAll({ behavior: "wait" }); });
     await page.route("**/pipeline?**", async (route) => {
       // Delay the server refresh, not the POST: confirmed UI feedback should
       // already move the row and counts while the fresh RSC payload is pending.
@@ -133,7 +142,7 @@ test("inline Pipeline status browser flow (disposable data only)", { skip: !url 
     assert.match(fs.readFileSync(path.join(root, "data/status-log.tsv"), "utf8"), /11\t.*Evaluated\tApplied\tweb/);
   });
 
-  await t.test("search during a delayed save cannot apply its response to a different row", async () => {
+  await scenario("search during a delayed save cannot apply its response to a different row", async (onScenarioFinished) => {
     await tab("ALL").click();
     await edit(13).waitFor();
     let release;
@@ -152,10 +161,10 @@ test("inline Pipeline status browser flow (disposable data only)", { skip: !url 
     await until(() => row(13).innerText().then((text) => text.includes("Interview")));
   });
 
-  await t.test("independent row saves may finish out of order without crossing identities", async (subtest) => {
+  await scenario("independent row saves may finish out of order without crossing identities", async (onScenarioFinished) => {
     let release;
     const gate = new Promise((resolve) => { release = resolve; });
-    subtest.after(async () => { release(); await page.unrouteAll({ behavior: "wait" }); });
+    onScenarioFinished(async () => { release(); await page.unrouteAll({ behavior: "wait" }); });
     await page.route("**/api/status", async (route) => {
       if (route.request().postDataJSON().n === "12") await gate;
       await route.continue();
@@ -174,7 +183,7 @@ test("inline Pipeline status browser flow (disposable data only)", { skip: !url 
     assert.match(await row(13).innerText(), /Rejected/);
   });
 
-  await t.test("detail-page dropdown retains the saved animation and persists", async () => {
+  await scenario("detail-page dropdown retains the saved animation and persists", async (onScenarioFinished) => {
     await page.goto(`${origin.origin}/pipeline/11`);
     const detailSelect = page.getByLabel("status", { exact: true });
     await detailSelect.waitFor();
@@ -186,7 +195,7 @@ test("inline Pipeline status browser flow (disposable data only)", { skip: !url 
     assert.equal(await detailSelect.inputValue(), "Responded");
   });
 
-  await t.test("narrow-screen editor stays reachable by horizontal scroll; inbox has no editor", async () => {
+  await scenario("narrow-screen editor stays reachable by horizontal scroll; inbox has no editor", async (onScenarioFinished) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${origin.origin}/pipeline?tab=ALL`);
     await edit(11).click();

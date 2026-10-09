@@ -14,9 +14,9 @@
 // told to read (the field table) and write (the JSON contract), since a drift
 // there means every answer comes back unusable.
 //
-// Run:  node --test tests/lib/answer-prompt.test.mjs
+// Run:  npm test -- tests/lib/answer-prompt.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { buildAnswerPrompt } from "../../src/lib/apply/answer-prompt.mjs";
 

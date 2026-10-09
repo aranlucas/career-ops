@@ -2,9 +2,9 @@
 // Imports directly from pdf-paths.mjs (the single source of truth) so the
 // test and production code can never drift out of sync.
 //
-// Run:  node --test tests/lib/pdf-paths.test.mjs
+// Run:  npm test -- tests/lib/pdf-paths.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync, mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";

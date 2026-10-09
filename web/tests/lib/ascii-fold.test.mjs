@@ -2,9 +2,9 @@
 // Imports the core and the web copy side-by-side so they can never drift, the
 // same shape normalize-text-key.test.mjs and url-key.test.mjs already use.
 //
-// Run:  node --test tests/lib/ascii-fold.test.mjs
+// Run:  npm test -- tests/lib/ascii-fold.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import { join, dirname } from "node:path";

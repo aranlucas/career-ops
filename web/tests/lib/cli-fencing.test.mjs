@@ -7,9 +7,9 @@
 // under `read-only` the Codex sandbox blocks DNS outright, and the network escape
 // hatch only exists for `workspace-write`.
 //
-// Run:  node --test tests/lib/cli-fencing.test.mjs
+// Run:  npm test -- tests/lib/cli-fencing.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { fenceArgs, fencingReport, isCliAllowedForCapabilities, isFencingNotice } from "../../src/lib/cli-fencing.mjs";
 import { CAPS, KNOWN_KINDS, capabilitiesFor } from "../../src/lib/worker-capabilities.mjs";

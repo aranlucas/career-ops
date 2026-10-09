@@ -29,15 +29,14 @@ empty default. (`web/src/lib/portals-config.mjs` is the worked example.)
 
 ## Testing
 
-Logic that deserves a test lives in a plain `.mjs` module so `node --test` can import
-it with no build step and no `@/` alias loader. See `tracker-table.mjs`,
-`cv-selection.mjs`, `report-sections.mjs`. Use Vitest and React Testing Library for
-rendered synchronous components. Keep async Server Component coverage in E2E tests.
+Logic that deserves a test lives in a plain `.mjs` module so it can run in Vitest's
+Node environment without a build step or `@/` alias loader. See `tracker-table.mjs`,
+`cv-selection.mjs`, `report-sections.mjs`. Use React Testing Library for rendered
+synchronous components. Keep async Server Component coverage in E2E tests.
 
 ```
-npm test          # Vitest component/unit tests
-npm run test:node # node --test "tests/**/*.test.mjs"
-npm run test:all  # Vitest plus Node tests
+npm test          # Vitest unit and component tests
+npm run test:watch # Vitest in watch mode
 npm run typecheck # tsc --noEmit
 npm run dev       # the app, reading the sibling career-ops files
 ```

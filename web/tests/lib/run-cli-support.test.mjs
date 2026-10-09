@@ -5,9 +5,9 @@
 // Each case reads Given (the raw CLI line / listing) → When (parse it) → Then
 // (the dashboard event it must become).
 //
-// Run:  node --test tests/lib/run-cli-support.test.mjs
+// Run:  npm test -- tests/lib/run-cli-support.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import {
   accumulateTokens,

@@ -81,7 +81,8 @@ directory.
 
 ```bash
 npm run dev          # dev server (Turbopack)
-npm test             # unit suites (node --test, no framework)
+npm test             # Vitest unit and component suites
+npm run test:watch   # Vitest in watch mode
 npx tsc --noEmit     # typecheck
 npm run build        # production build
 ```
@@ -195,36 +196,20 @@ Suites live in `web/tests/`, mirroring the path of what they test under
 `web/src/` — so `src/lib/clean-chips.mjs` is tested by
 `tests/lib/clean-chips.test.mjs`. Name the file `{module}.test.mjs`.
 
-Root-level scripts are the one exception: `server.mjs` is tested by
-`tests/lib/server-launcher.test.mjs`, because `test-all.mjs`'s parity check gates
-only `web/tests/lib/` and a suite outside it would never run in the required check.
+Vitest discovers the Node suites under `tests/lib/` and the React Testing
+Library suites under `tests/components/`. The Node suites use Vitest's Node
+environment; component tests use jsdom. New suites need no registration — add
+a `{module}.test.mjs` or `{module}.test.tsx` file in the matching directory.
+The Vitest 5 runtime requires Node ≥ 22.12.0, which is the `engines.node` floor
+in `web/package.json`.
 
-`npm test` discovers them with a glob (`tests/**/*.test.mjs`), so a new suite
-needs **no registration** — just add the file. **Requires Node ≥ 22**: earlier
-versions don't expand CLI globs for `node --test`, so `npm test` prints
-`Could not find '…'`, runs nothing and exits 1. Hence `engines.node` in
-`web/package.json` — a higher floor than `next` itself asks for.
+Keep test files out of `src/`: Next.js scans that tree during builds and type
+checking, so putting tests there entangles fixtures with app routes and build
+conventions. The root `tests/` suite keeps its own runner and assertions because
+it must run on a bare clone without installing the web workspace.
 
-Three constraints follow from all this:
-
-- **Keep tests out of `src/`.** `src/` is the Next.js app's own tree, scanned by
-  `next build`'s file tracing and `tsc --noEmit`; test files there entangle
-  fixtures with build and route conventions.
-- **Use `.mjs`, not `.ts`.** There is no test framework and no TypeScript loader
-  by design — `node --test` cannot run a `.ts` suite, so one would look like
-  coverage and never execute. Extract the logic under test into a plain `.mjs`
-  module (the pattern `src/lib/pdf-paths.mjs` and `src/lib/pdf-render.mjs`
-  already follow) and import it from the test.
-- **Web suites use `node:test`; core suites don't.** Here you write
-  `import { test } from "node:test"` with `node:assert/strict`. The root
-  `tests/` suite deliberately uses neither — it has its own `pass`/`fail`
-  helpers, because [#1440](https://github.com/career-ops-hq/career-ops/issues/1440)
-  requires the core suite to run on a bare clone with "no framework, not even
-  `node:test`". Don't carry either style across the boundary.
-
-`tests/web-test-layout.test.mjs` in the **root** suite enforces all of the above
-on every PR, including that `npm test` never goes back to listing suites by name
-([#2360](https://github.com/career-ops-hq/career-ops/issues/2360)).
+Use Vitest's `test`, `describe`, and lifecycle APIs in web suites. Keep the
+root-level `tests/` runner independent from Vitest and the web workspace.
 
 ### Assistant conversations
 

@@ -19,9 +19,9 @@
 // has no TS runner. Reading up out of web/ follows clean-chips.test.mjs, which
 // loads ../../../templates/portals.example.yml the same way.
 //
-// Run:  node --test tests/lib/status-alias.test.mjs
+// Run:  npm test -- tests/lib/status-alias.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 // Namespace import, not default: js-yaml has no default export (test-all.mjs

@@ -10,9 +10,9 @@
 // comma and returned null, discarding every field that DID finish along with
 // the one that didn't.
 //
-// Run:  node --test tests/lib/extract-json-object.test.mjs
+// Run:  npm test -- tests/lib/extract-json-object.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { extractJsonObject } from "../../src/lib/extract-json-object.mjs";
 

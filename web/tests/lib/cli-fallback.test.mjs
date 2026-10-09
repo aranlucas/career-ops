@@ -13,9 +13,9 @@
 //     argv are keyed on cliId, and running one CLI under another's id is the
 //     mismatch #2507 is about.
 //
-// Run:  node --test tests/lib/cli-fallback.test.mjs
+// Run:  npm test -- tests/lib/cli-fallback.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";

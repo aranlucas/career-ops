@@ -14,7 +14,7 @@
  * control would be contaminated by any earlier test that registered it — the
  * control would pass for the wrong reason and prove nothing.
  */
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -63,7 +63,7 @@ const skipTs = tsSkipReason();
 
 const IMPORT_LOADER = `await import(${JSON.stringify(LOADER)});`;
 
-test("CONTROL: without the loader, an @/ specifier fails to resolve", { skip: skipTs }, () => {
+test.skipIf(Boolean(skipTs))("CONTROL: without the loader, an @/ specifier fails to resolve", () => {
   // If this ever passes, every other assertion in this file is vacuous — the
   // alias would already be resolving and the hook would be doing nothing.
   const r = run(`await import("./src/lib/apply/cv.ts"); console.log("LOADED");`);
@@ -72,7 +72,7 @@ test("CONTROL: without the loader, an @/ specifier fails to resolve", { skip: sk
   assert.match(r.err, /@\/lib/, "expected the unresolved specifier to be the @/ alias");
 });
 
-test("with the loader, a TS module reached through @/ loads", { skip: skipTs }, () => {
+test.skipIf(Boolean(skipTs))("with the loader, a TS module reached through @/ loads", () => {
   const r = run(`${IMPORT_LOADER}
     const m = await import("./src/lib/apply/cv.ts");
     console.log(typeof m.resolveTailoredCv);`);
@@ -80,7 +80,7 @@ test("with the loader, a TS module reached through @/ loads", { skip: skipTs }, 
   assert.equal(r.out, "function");
 });
 
-test("an extensionless @/ specifier resolves .ts", { skip: skipTs }, () => {
+test.skipIf(Boolean(skipTs))("an extensionless @/ specifier resolves .ts", () => {
   const r = run(`${IMPORT_LOADER}
     const m = await import("@/lib/career-ops");
     console.log(typeof m.careerOpsRoot);`);
@@ -88,9 +88,9 @@ test("an extensionless @/ specifier resolves .ts", { skip: skipTs }, () => {
   assert.equal(r.out, "function");
 });
 
-test("the @/ alias resolves from a cwd outside web/", { skip: skipTs }, () => {
+test.skipIf(Boolean(skipTs))("the @/ alias resolves from a cwd outside web/", () => {
   // The hook anchors web/src to its own file URL, and the comment there says why:
-  // `npm test` runs from web/, a root-level `node --test web/tests/…` runs from the
+  // `npm test` runs from web/, a root-level `npm --prefix web test -- tests/…` runs from the
   // repo root. Every other case here runs the child from web/, where a cwd anchor
   // and a file anchor are indistinguishable. From the repo root they are not:
   // there is no src/ beside this repo's package.json at all.
@@ -122,7 +122,7 @@ test("a non-@/ specifier is left to Node", () => {
   assert.equal(r.out, "function function");
 });
 
-test("importing the loader twice still resolves, and leaves its flag set", { skip: skipTs }, () => {
+test.skipIf(Boolean(skipTs))("importing the loader twice still resolves, and leaves its flag set", () => {
   // Named for what it measures. It is NOT evidence that the hook registered
   // once: ESM caches this module, so the second import never re-runs its body,
   // and the flag it reads is set in this realm whether or not the loader realm
@@ -152,7 +152,7 @@ test("the hook is injected as a file:// URL, not a bare absolute path", () => {
   );
 });
 
-test("the .ts skip gate keys on the signal that actually predicts the failure", { skip: skipTs }, () => {
+test.skipIf(Boolean(skipTs))("the .ts skip gate keys on the signal that actually predicts the failure", () => {
   // POSITIVE CONTROL for skipTs. Without it the gate is an assumption: the four
   // cases above would keep passing here and nothing would notice if the
   // predicate drifted away from the behaviour it stands for.

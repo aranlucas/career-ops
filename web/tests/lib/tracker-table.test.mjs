@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import test from 'node:test';
+import { onTestFinished, test } from "vitest";
 import { fileURLToPath } from 'node:url';
 
 import { parseApplications } from '../../src/lib/tracker-table.mjs';
@@ -35,10 +35,10 @@ const markets = [
   ['ES', 'Fecha', 'Empresa', 'Puesto'],
 ];
 
-test('parses header columns when the data root does not contain system files', (t) => {
+test('parses header columns when the data root does not contain system files', () => {
   const dataRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'career-ops-data-'));
   const systemRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'career-ops-system-'));
-  t.after(() => {
+  onTestFinished(() => {
     fs.rmSync(dataRoot, { recursive: true, force: true });
     fs.rmSync(systemRoot, { recursive: true, force: true });
   });
@@ -63,10 +63,10 @@ test('parses header columns when the data root does not contain system files', (
   ]);
 });
 
-test('ignores a data-root alias table that cannot map the required columns', (t) => {
+test('ignores a data-root alias table that cannot map the required columns', () => {
   const dataRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'career-ops-data-'));
   const systemRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'career-ops-system-'));
-  t.after(() => {
+  onTestFinished(() => {
     fs.rmSync(dataRoot, { recursive: true, force: true });
     fs.rmSync(systemRoot, { recursive: true, force: true });
   });

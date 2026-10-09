@@ -15,10 +15,10 @@
  * registration, and no core-only-install skip guard, because web/ is always
  * present when this suite runs.
  *
- * Run (from web/, as `npm test` does):  node --test tests/lib/followup-view.test.mjs
+ * Run (from web/, as `npm test` does):  npm test -- tests/lib/followup-view.test.mjs
  */
 
-import { test } from 'node:test';
+import { test } from "vitest";
 import assert from 'node:assert/strict';
 import { pickNextUpcoming, isDue, selectDueFollowups } from '../../src/lib/core/followup-view.mjs';
 

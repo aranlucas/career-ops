@@ -12,9 +12,9 @@
 // Windows, so fusing the two would leave the matching rules — the half a review
 // has already found bugs in — untested on the platform whose CI runs them.
 //
-// Run:  node --test tests/lib/cli-fencing-probe.test.mjs
+// Run:  npm test -- tests/lib/cli-fencing-probe.test.mjs
 
-import { test } from "node:test";
+import { onTestFinished, test } from "vitest";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -51,7 +51,7 @@ const completeHelp = (overrides = {}) => ({
  * pinning these guards to whatever version a developer happens to have would
  * make them pass or fail for reasons unrelated to the code under test.
  */
-function stubCodex(t, { globalFlags, execFlags }) {
+function stubCodex({ globalFlags, execFlags }) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "fencing-probe-"));
   const bin = path.join(dir, "codex-stub.mjs");
   const callLog = path.join(dir, "calls.log");
@@ -70,7 +70,7 @@ process.stdout.write((isExec ? help.execHelp : help.globalHelp) + "\\n");
 `,
   );
   fs.chmodSync(bin, 0o755);
-  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  onTestFinished(() => fs.rmSync(dir, { recursive: true, force: true }));
   const spawnCount = () => {
     try {
       return fs.readFileSync(callLog, "utf8").trim().split("\n").filter(Boolean).length;
@@ -85,9 +85,7 @@ process.stdout.write((isExec ? help.execHelp : help.globalHelp) + "\\n");
 // binary there. Only the two spawn-counting cases below depend on one; every
 // rule they would otherwise cover is asserted against helpSatisfiesFencing,
 // which runs everywhere.
-const needsSpawnableStub = {
-  skip: process.platform === "win32" ? "Windows cannot spawn a shebang script as a binary" : false,
-};
+const testWhenSpawnable = test.skipIf(process.platform === "win32");
 
 test("the flag lists these guards read still look like themselves", () => {
   // Given a suite that derives its fixtures from the exported requirement lists
@@ -248,7 +246,7 @@ test("a binary that cannot be inspected is refused", async () => {
   assert.equal(supported, false);
 });
 
-test("a binary that exists but cannot be run is refused", async (t) => {
+test("a binary that exists but cannot be run is refused", async () => {
   // Given a file that stats successfully and then fails at spawn — no execute
   // permission on POSIX, an unrunnable script on Windows; either way a
   // half-finished install, and a different code path from the missing one
@@ -256,7 +254,7 @@ test("a binary that exists but cannot be run is refused", async (t) => {
   const bin = path.join(dir, "codex-stub.mjs");
   fs.writeFileSync(bin, "#!/usr/bin/env node\n");
   fs.chmodSync(bin, 0o644);
-  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  onTestFinished(() => fs.rmSync(dir, { recursive: true, force: true }));
 
   // When the probe runs
   const supported = await codexFencingSupported(bin, { alsoRequiresInExec: ROUTE_EXEC_FLAGS });
@@ -266,10 +264,10 @@ test("a binary that exists but cannot be run is refused", async (t) => {
   assert.equal(supported, false);
 });
 
-test("help output is read once per binary, whatever the caller asks of it", needsSpawnableStub, async (t) => {
+testWhenSpawnable("help output is read once per binary, whatever the caller asks of it", async () => {
   // Given two process spawns per read, and a Scan tab that calls this on every
   // AI search
-  const { bin, spawnCount } = stubCodex(t, {
+  const { bin, spawnCount } = stubCodex({
     globalFlags: [...CODEX_REQUIRED_GLOBAL_FLAGS],
     execFlags: [...CODEX_REQUIRED_EXEC_FLAGS, ...ROUTE_EXEC_FLAGS],
   });
@@ -289,11 +287,11 @@ test("help output is read once per binary, whatever the caller asks of it", need
   assert.equal(spawnCount(), 2, "one --help and one `exec --help`, shared by every caller");
 });
 
-test("a replaced binary is re-read even if size and mtime are restored", needsSpawnableStub, async (t) => {
+testWhenSpawnable("a replaced binary is re-read even if size and mtime are restored", async () => {
   // Given an executable swapped in place — a reinstall, a build writing the same
   // length, a restore putting the timestamp back. Size and mtime can survive
   // that; the file is still a different one.
-  const { bin, spawnCount } = stubCodex(t, {
+  const { bin, spawnCount } = stubCodex({
     globalFlags: [...CODEX_REQUIRED_GLOBAL_FLAGS],
     execFlags: [...CODEX_REQUIRED_EXEC_FLAGS, ...ROUTE_EXEC_FLAGS],
   });
@@ -328,9 +326,7 @@ test("a replaced binary is re-read even if size and mtime are restored", needsSp
 // would simply wait forever, in CI as much as here. An explicit timeout turns
 // the hang into a reported failure. Generous against the probe's own 6s
 // deadline (5s help timeout + 1s grace) so slow CI cannot make it flap.
-const settlesOrFails = { ...needsSpawnableStub, timeout: 20_000 };
-
-test("a probe settles even when a descendant holds the pipe open", settlesOrFails, async (t) => {
+testWhenSpawnable("a probe settles even when a descendant holds the pipe open", { timeout: 20_000 }, async () => {
   // Given a binary that spawns a detached child inheriting its stdout and then
   // exits. The direct child is gone, but the WRITE end of the pipe is not, so
   // the "close" event — which waits for the stdio streams, not just the exit —
@@ -350,7 +346,7 @@ spawn(process.execPath, ["-e", "setTimeout(() => {}, 30_000)"], {
 `,
   );
   fs.chmodSync(bin, 0o755);
-  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  onTestFinished(() => fs.rmSync(dir, { recursive: true, force: true }));
 
   // When the probe runs it
   const supported = await codexFencingSupported(bin, { alsoRequiresInExec: ROUTE_EXEC_FLAGS });
@@ -361,12 +357,12 @@ spawn(process.execPath, ["-e", "setTimeout(() => {}, 30_000)"], {
   assert.equal(supported, false);
 });
 
-test("a binary that says nothing is retried rather than remembered", needsSpawnableStub, async (t) => {
+testWhenSpawnable("a binary that says nothing is retried rather than remembered", async () => {
   // Given a probe that produced no help at all: a spawn error, a timeout, a
   // binary killed mid-write. That is a transient condition, not a verdict about
   // the flags — caching it would strand a working Codex until the server
   // restarts.
-  const { bin, spawnCount } = stubCodex(t, { globalFlags: [], execFlags: [] });
+  const { bin, spawnCount } = stubCodex({ globalFlags: [], execFlags: [] });
 
   // When it is probed twice
   assert.equal(await codexFencingSupported(bin), false);

@@ -5,9 +5,9 @@
 // override, so dropping it doesn't loosen results, it lets through jobs the user
 // hard-rejected.
 //
-// Run:  node --test tests/lib/portals-serialize.test.mjs
+// Run:  npm test -- tests/lib/portals-serialize.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import * as yaml from "js-yaml";
 import { serializePortals } from "../../src/lib/core/portals-serialize.mjs";

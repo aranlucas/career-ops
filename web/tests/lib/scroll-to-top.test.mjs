@@ -2,9 +2,9 @@
 // same helpers the BackToTop component uses, so the visibility threshold and
 // the reduced-motion behavior can never drift from what ships.
 //
-// Run:  node --test tests/lib/scroll-to-top.test.mjs
+// Run:  npm test -- tests/lib/scroll-to-top.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import {
   BACK_TO_TOP_THRESHOLD,

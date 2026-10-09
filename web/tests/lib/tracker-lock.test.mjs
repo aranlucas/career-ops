@@ -10,9 +10,9 @@
 // lock removes it. Without the negative half, a lock that never engaged would
 // pass just as happily.
 //
-// Run:  node --test tests/lib/tracker-lock.test.mjs
+// Run:  npm test -- tests/lib/tracker-lock.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -103,7 +103,7 @@ test("WITHOUT a lock, two concurrent writers lose one update silently", async ()
   }
 });
 
-test("WITH the core lock, both updates survive", { skip: skipCore }, async () => {
+test.skipIf(Boolean(skipCore))("WITH the core lock, both updates survive", async () => {
   const { acquireTrackerLock, trackerLockDirFor } = core;
   const { root, file } = makeTracker();
   const guarded = async (rowNum, status, pauseMs) => {
@@ -123,7 +123,7 @@ test("WITH the core lock, both updates survive", { skip: skipCore }, async () =>
   }
 });
 
-test("the lock is released on a throwing path, not just the happy one", { skip: skipCore }, async () => {
+test.skipIf(Boolean(skipCore))("the lock is released on a throwing path, not just the happy one", async () => {
   // A leaked lock on a long-lived server is worse than the bug: the holder's pid
   // stays alive, so the core's stale-recovery will not reclaim it.
   const { acquireTrackerLock, trackerLockDirFor } = core;

@@ -8,9 +8,9 @@
 // that cannot identify the company has to say so rather than return its best
 // guess, because the caller attaches the result to a real application.
 //
-// Run:  node --test tests/lib/company-slug.test.mjs
+// Run:  npm test -- tests/lib/company-slug.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";

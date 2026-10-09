@@ -19,10 +19,10 @@
 // asserted to exist first, so a rename or a refactor fails loudly instead of
 // matching nothing and passing.
 //
-// Run (from web/, as `npm test` does):  node --test tests/lib/drive-stream-close.test.mjs
-// From the repo root:                   node --test web/tests/lib/drive-stream-close.test.mjs
+// Run (from web/, as `npm test` does):  npm test -- tests/lib/drive-stream-close.test.mjs
+// From the repo root:                   npm --prefix web test -- tests/lib/drive-stream-close.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";

@@ -5,9 +5,9 @@
 // only available guard was grepping the file — which matched route.ts's own
 // comments and so could never fail. Asserting the returned string closes that.
 //
-// Run:  node --test tests/lib/run-prompts.test.mjs
+// Run:  npm test -- tests/lib/run-prompts.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { buildPrompt, isShellSafeCompanyName } from "../../src/lib/run-prompts.mjs";
 import { OPEN_MARK, CLOSE_MARK } from "../../src/lib/cv-envelope.mjs";

@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { onTestFinished, test } from "vitest";
 import assert from "node:assert/strict";
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -27,11 +27,11 @@ register(`data:text/javascript,${encodeURIComponent(loader)}`, pathToFileURL(web
 
 const { POST } = await import("../../src/app/api/profile/route.ts");
 const source = "# Original fixture comment\ncandidate:\n  full_name: Fixture Candidate\n  email: fixture@example.invalid\ncompensation:\n  currency: USD\n  target_range: 80-90\n";
-async function fixture(t, body) {
+async function fixture(body) {
   const root = mkdtempSync(path.join(tmpdir(), "profile-input-"));
   const previous = process.env.CAREER_OPS_ROOT;
   process.env.CAREER_OPS_ROOT = root;
-  t.after(() => {
+  onTestFinished(() => {
     if (previous === undefined) delete process.env.CAREER_OPS_ROOT;
     else process.env.CAREER_OPS_ROOT = previous;
     rmSync(root, { recursive: true, force: true });
@@ -62,8 +62,8 @@ for (const [name, body] of [
   ["object currency", '{"currency":{}}'],
   ["array remote", '{"remote":[]}'],
 ]) {
-  test(`${name} returns 400 without changing any files`, async (t) => {
-    const { response, file, config } = await fixture(t, body);
+  test(`${name} returns 400 without changing any files`, async () => {
+    const { response, file, config } = await fixture(body);
     assert.equal(response.status, 400);
     assert.equal(typeof (await response.json()).error, "string");
     assert.equal(readFileSync(file, "utf8"), source);
@@ -72,8 +72,8 @@ for (const [name, body] of [
 }
 
 for (const bound of ["compMin", "compMax"]) {
-  test(`a lone ${bound} is ignored while other profile updates are saved`, async (t) => {
-    const { response, file, config } = await fixture(t, JSON.stringify({
+  test(`a lone ${bound} is ignored while other profile updates are saved`, async () => {
+    const { response, file, config } = await fixture(JSON.stringify({
       name: "Updated Fixture", [bound]: 100,
     }));
     assert.equal(response.status, 200);
@@ -87,8 +87,8 @@ for (const bound of ["compMin", "compMax"]) {
   });
 }
 
-test("valid partial updates retain unrelated settings and exact-byte backup", async (t) => {
-  const { response, file, config } = await fixture(t, JSON.stringify({
+test("valid partial updates retain unrelated settings and exact-byte backup", async () => {
+  const { response, file, config } = await fixture(JSON.stringify({
     name: "Updated Fixture", roles: ["Backend Engineer"], compMin: 100, compMax: 200,
   }));
   assert.equal(response.status, 200);

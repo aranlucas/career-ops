@@ -2,9 +2,9 @@
 // Imports directly from act-envelope.mjs (the single source of truth) so the
 // test and production code can never drift.
 //
-// Run:  node --test tests/lib/act-envelope.test.mjs
+// Run:  npm test -- tests/lib/act-envelope.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { pendingActOpenerStart } from "../../src/lib/act-envelope.mjs";
 

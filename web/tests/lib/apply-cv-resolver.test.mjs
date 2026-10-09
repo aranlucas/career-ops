@@ -23,10 +23,10 @@
  * (with extension probing) for the lifetime of this process. Test-only, no
  * build step, no effect on the real Next build.
  *
- * Run (from web/, as `npm test` does):  node --test tests/lib/apply-cv-resolver.test.mjs
+ * Run (from web/, as `npm test` does):  npm test -- tests/lib/apply-cv-resolver.test.mjs
  */
 
-import { test } from 'node:test';
+import { test } from "vitest";
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, utimesSync } from 'node:fs';
 import { tmpdir } from 'node:os';

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 
 import { pdfIndexEntryForReport, pdfPathForReport, reportNumberFromCell } from "../../src/lib/apply/cv-selection.mjs";
 

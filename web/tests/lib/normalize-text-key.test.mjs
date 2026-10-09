@@ -1,9 +1,9 @@
 // Parity + regression tests for the web's Unicode-safe normalizeTextKey mirror.
 // Imports the core and the web copy side-by-side so they can never drift (#2369/#2666).
 //
-// Run:  node --test tests/lib/normalize-text-key.test.mjs
+// Run:  npm test -- tests/lib/normalize-text-key.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { pathToFileURL } from "node:url";
 import { join, dirname } from "node:path";

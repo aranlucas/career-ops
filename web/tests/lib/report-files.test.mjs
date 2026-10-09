@@ -4,9 +4,9 @@
 // here moves both consumers at once. That is the point: the two used to carry
 // separate copies that already disagreed.
 //
-// Run:  node --test tests/lib/report-files.test.mjs
+// Run:  npm test -- tests/lib/report-files.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { isReservedReportFile } from "../../src/lib/report-files.mjs";
 

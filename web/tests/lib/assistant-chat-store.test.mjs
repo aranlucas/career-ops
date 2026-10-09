@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { onTestFinished, test } from "vitest";
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { syncBuiltinESMExports } from 'node:module';
@@ -8,9 +8,9 @@ import { tmpdir } from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { readChat, listChats, saveChat, deleteChat } from '../../src/lib/assistant-chat-store.mjs';
 const messages = [{ role: 'user', parts: [{ type: 'text', text: 'My first conversation' }] }];
-function fixture(t) { const root = mkdtempSync(join(tmpdir(), 'assistant-chats-')); t.after(() => rmSync(root, { recursive: true, force: true })); return root; }
-test('disk conversations survive independent reads, rename, switching and delete', t => {
-  const root = fixture(t), first = randomUUID(), second = randomUUID();
+function fixture() { const root = mkdtempSync(join(tmpdir(), 'assistant-chats-')); onTestFinished(() => rmSync(root, { recursive: true, force: true })); return root; }
+test('disk conversations survive independent reads, rename, switching and delete', () => {
+  const root = fixture(), first = randomUUID(), second = randomUUID();
   assert.deepEqual(listChats(root), { chats: [], errors: [] });
   assert.equal(readChat(root, first), null);
   const a = saveChat(root, first, { revision: 0, messages });
@@ -25,8 +25,8 @@ test('disk conversations survive independent reads, rename, switching and delete
   assert.equal(readChat(root, first), null);
   assert.equal(listChats(root).chats.length, 1);
 });
-test('stale tabs and deletes cannot overwrite newer messages', t => {
-  const root = fixture(t), id = randomUUID();
+test('stale tabs and deletes cannot overwrite newer messages', () => {
+  const root = fixture(), id = randomUUID();
   saveChat(root, id, { revision: 0, messages });
   const next = [...messages, { role: 'assistant', content: 'New response' }];
   saveChat(root, id, { revision: 1, messages: next });
@@ -34,14 +34,14 @@ test('stale tabs and deletes cannot overwrite newer messages', t => {
   assert.throws(() => deleteChat(root, id, 1), /another tab/);
   assert.equal(readChat(root, id).messages.length, 2);
 });
-test('migration retries do not duplicate a conversation or increment its revision', t => {
-  const root = fixture(t), id = randomUUID();
+test('migration retries do not duplicate a conversation or increment its revision', () => {
+  const root = fixture(), id = randomUUID();
   const first = saveChat(root, id, { revision: 0, messages });
   assert.deepEqual(saveChat(root, id, { revision: 0, messages }), first);
   assert.equal(listChats(root).chats.length, 1);
 });
-test('invalid ids, empty chats, oversized payloads, and corrupt files never overwrite data', t => {
-  const root = fixture(t), id = randomUUID();
+test('invalid ids, empty chats, oversized payloads, and corrupt files never overwrite data', () => {
+  const root = fixture(), id = randomUUID();
   assert.throws(() => saveChat(root, '../outside', { revision: 0, messages }), /Invalid conversation id/);
   assert.throws(() => saveChat(root, id, { revision: 0, messages: [] }), /Empty/);
   assert.throws(() => saveChat(root, id, { revision: 0, messages: [{ role: 'user', content: 'x'.repeat(1_000_001) }] }), /too large/);
@@ -55,16 +55,16 @@ test('invalid ids, empty chats, oversized payloads, and corrupt files never over
   assert.equal(readFileSync(path, 'utf8'), '{broken');
   assert.deepEqual(readdirSync(join(root, '.career-ops-web', 'chats')), [`${id}.json`]);
 });
-test('an in-progress writer is reported rather than bypassed', t => {
-  const root = fixture(t), id = randomUUID();
+test('an in-progress writer is reported rather than bypassed', () => {
+  const root = fixture(), id = randomUUID();
   saveChat(root, id, { revision: 0, messages });
   writeFileSync(join(root, '.career-ops-web', 'chats', `${id}.json.lock`), '');
   assert.throws(() => saveChat(root, id, { revision: 1, messages }), /busy/);
   assert.equal(readChat(root, id).revision, 1);
 });
 
-test('lock and temp cleanup errors do not replace a saved conversation', t => {
-  const root = fixture(t), lockId = randomUUID(), tempId = randomUUID();
+test('lock and temp cleanup errors do not replace a saved conversation', () => {
+  const root = fixture(), lockId = randomUUID(), tempId = randomUUID();
   const lockPath = join(root, '.career-ops-web', 'chats', `${lockId}.json.lock`);
   const originalOpenSync = fs.openSync, originalCloseSync = fs.closeSync, originalUnlinkSync = fs.unlinkSync, originalConsoleError = console.error;
   const logged = [];
@@ -102,8 +102,8 @@ test('lock and temp cleanup errors do not replace a saved conversation', t => {
   }
 });
 
-test('one damaged conversation does not hide healthy conversations or prevent new saves', t => {
-  const root = fixture(t), good = randomUUID(), bad = randomUUID(), next = randomUUID();
+test('one damaged conversation does not hide healthy conversations or prevent new saves', () => {
+  const root = fixture(), good = randomUUID(), bad = randomUUID(), next = randomUUID();
   saveChat(root, good, { revision: 0, messages });
   const path = join(root, '.career-ops-web', 'chats', `${bad}.json`);
   writeFileSync(path, '{broken');
@@ -116,8 +116,8 @@ test('one damaged conversation does not hide healthy conversations or prevent ne
   assert.equal(listChats(root).chats.length, 2);
   assert.equal(readFileSync(path, 'utf8'), '{broken');
 });
-test('over-limit drafts leave the saved conversation intact and permit a fresh conversation', t => {
-  const root = fixture(t), id = randomUUID();
+test('over-limit drafts leave the saved conversation intact and permit a fresh conversation', () => {
+  const root = fixture(), id = randomUUID();
   const full = Array.from({ length: 2000 }, (_, i) => ({ role: i % 2 ? 'assistant' : 'user', content: `turn ${i}` }));
   saveChat(root, id, { revision: 0, messages: full });
   const before = readFileSync(join(root, '.career-ops-web', 'chats', `${id}.json`), 'utf8');

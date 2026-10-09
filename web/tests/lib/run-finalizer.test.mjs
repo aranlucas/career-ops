@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { onTestFinished, test } from "vitest";
 import assert from "node:assert/strict";
 import { EventEmitter, once } from "node:events";
 import { spawn } from "node:child_process";
@@ -65,7 +65,7 @@ test("independent runs keep independent write guards", () => {
   assert.equal(second.releases(), 1);
 });
 
-test("a real worker remains guarded while it finishes after cancellation", { timeout: 10_000 }, async (t) => {
+test("a real worker remains guarded while it finishes after cancellation", { timeout: 10_000 }, async () => {
   // IPC keeps the child alive without launching an AI CLI or touching user data.
   // It also lets this exercise the same lifetime on Windows and POSIX.
   const child = spawn(process.execPath, ["-e", `
@@ -74,7 +74,7 @@ test("a real worker remains guarded while it finishes after cancellation", { tim
     });
     process.send("ready");
   `], { stdio: ["ignore", "ignore", "ignore", "ipc"] });
-  t.after(() => { if (child.exitCode === null) child.kill(); });
+  onTestFinished(() => { if (child.exitCode === null) child.kill(); });
   let guarded = true;
   const finish = createRunFinalizer(child, () => { guarded = false; });
   await once(child, "message");

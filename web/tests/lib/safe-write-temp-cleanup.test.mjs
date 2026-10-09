@@ -24,10 +24,10 @@
 // already uses for pipeline.ts. The extractor self-checks, so a rename of the
 // function fails loudly rather than silently matching nothing.
 //
-// Run (from web/, as `npm test` does):  node --test tests/lib/safe-write-temp-cleanup.test.mjs
-// From the repo root:                   node --test web/tests/lib/safe-write-temp-cleanup.test.mjs
+// Run (from web/, as `npm test` does):  npm test -- tests/lib/safe-write-temp-cleanup.test.mjs
+// From the repo root:                   npm --prefix web test -- tests/lib/safe-write-temp-cleanup.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 
 // The helper tests in saved-cli-pick.test.mjs prove pickDefaultInstalled returns
 // the right id, but they cannot see whether ConfigForm actually WRITES it. Delete

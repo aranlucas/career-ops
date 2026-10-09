@@ -15,9 +15,9 @@
 // `process.env.CAREER_OPS_PROFILE` itself, at module load, and never saw the
 // stand-in. The test agreed with the bug.
 //
-// Run:  node --test tests/lib/cv-template.test.mjs
+// Run:  npm test -- tests/lib/cv-template.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -104,7 +104,7 @@ async function asDashboard(root, profileEnv, fn) {
   }
 }
 
-test("a RELATIVE CAREER_OPS_PROFILE resolves against the checkout, not the cwd", { skip: !coreUsable }, async () => {
+test.skipIf(!coreUsable)("a RELATIVE CAREER_OPS_PROFILE resolves against the checkout, not the cwd", async () => {
   // Given a user who points CAREER_OPS_PROFILE at their profile the way the core
   // documents it — relative — and a dashboard whose cwd is `<core>/web`
   const root = fakeCheckout();
@@ -118,7 +118,7 @@ test("a RELATIVE CAREER_OPS_PROFILE resolves against the checkout, not the cwd",
   assert.equal(rel, "templates/cv-template.mine.html");
 });
 
-test("an ABSOLUTE CAREER_OPS_PROFILE is left alone", { skip: !coreUsable }, async () => {
+test.skipIf(!coreUsable)("an ABSOLUTE CAREER_OPS_PROFILE is left alone", async () => {
   // Given a profile kept outside the checkout entirely (#524's supported setup),
   // path.resolve must return it unchanged
   const abs = path.join(os.tmpdir(), `cv-template-profile-${process.pid}.yml`);
@@ -130,7 +130,7 @@ test("an ABSOLUTE CAREER_OPS_PROFILE is left alone", { skip: !coreUsable }, asyn
   fs.rmSync(abs, { force: true });
 });
 
-test("no CAREER_OPS_PROFILE falls back to the checkout's own config/profile.yml", { skip: !coreUsable }, async () => {
+test.skipIf(!coreUsable)("no CAREER_OPS_PROFILE falls back to the checkout's own config/profile.yml", async () => {
   // Given the default install, where the core's own default is the right answer
   // and this module must not restate it
   const root = fakeCheckout();
@@ -140,7 +140,7 @@ test("no CAREER_OPS_PROFILE falls back to the checkout's own config/profile.yml"
   assert.equal(rel, "templates/cv-template.mine.html");
 });
 
-test("a template pack survives BOTH halves: the resolver and the prompt's guard", { skip: !coreUsable }, async () => {
+test.skipIf(!coreUsable)("a template pack survives BOTH halves: the resolver and the prompt's guard", async () => {
   // The seam this PR is about. resolveCvTemplate and safeCvTemplate live in
   // different modules and each looked right on its own, while the second silently
   // threw away what the first returned. Nothing pinned them together, so a pack

@@ -1,13 +1,13 @@
 // Graph + layout tests for the analytics Pipeline Sankey.
-// Run:  node --test tests/lib/pipeline-sankey.test.mjs
+// Run:  npm test -- tests/lib/pipeline-sankey.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import "../helpers/web-ts-alias-loader.mjs";
 import { classifyLeaf, buildPipelineSankey, layoutSankey, parseStatusLog, statusToken } from "../../src/lib/pipeline-sankey.mjs";
+import { readStatusLog, readApplicationStatusLog } from "../../src/lib/career-ops.ts";
 
 test("statusToken uses canonStatus aliases (same map as Analytics)", () => {
   assert.equal(statusToken("Interview"), "INTERVIEW");
@@ -154,10 +154,8 @@ test("layoutSankey positions nodes and draws a path per live link", () => {
 // ── readStatusLog(): the ledger read behind the Sankey ──────────────────────
 // A missing data/status-log.tsv is normal and charts from the snapshot; any
 // other read failure must surface instead of passing for an empty log. It lives
-// in career-ops.ts, reached through the shared @/ alias hook, with
-// CAREER_OPS_ROOT pointed at a scratch data root.
-const skipTs = !process.features?.typescript && "this Node cannot import career-ops.ts (no type stripping)";
-const { readStatusLog, readApplicationStatusLog } = skipTs ? {} : await import("@/lib/career-ops");
+// in career-ops.ts, loaded through Vitest's TypeScript and tsconfig-path
+// support, with CAREER_OPS_ROOT pointed at a scratch data root.
 
 function withDataRoot(setup, fn) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "sankey-status-log-"));
@@ -175,18 +173,18 @@ function withDataRoot(setup, fn) {
   }
 }
 
-test("readStatusLog: a present log is parsed from the data root", { skip: skipTs }, () => {
+test("readStatusLog: a present log is parsed from the data root", () => {
   const tsv = "13\t2026-08-26\tInterview\tRejected\tset-status\t\n";
   const rows = withDataRoot((data) => fs.writeFileSync(path.join(data, "status-log.tsv"), tsv), () => readStatusLog());
   assert.equal(rows.length, 1);
   assert.equal(rows[0].num, 13);
 });
 
-test("readStatusLog: a missing log is an empty log", { skip: skipTs }, () => {
+test("readStatusLog: a missing log is an empty log", () => {
   assert.deepEqual(withDataRoot(() => {}, () => readStatusLog()), []);
 });
 
-test("Sankey and cumulative tiles read the same active tracker's ledger", { skip: skipTs }, (t) => {
+test("Sankey and cumulative tiles read the same active tracker's ledger", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "sankey-tracker-"));
   const priorRoot = process.env.CAREER_OPS_ROOT;
   const priorTracker = process.env.CAREER_OPS_TRACKER;
@@ -220,7 +218,7 @@ test("Sankey and cumulative tiles read the same active tracker's ledger", { skip
     } catch (e) {
       if (e?.code !== "EPERM" || e?.syscall !== "symlink") throw e;
       linked = false;
-      t.diagnostic("symlinked-tracker leg skipped: no symlink privilege (EPERM)");
+      console.info("symlinked-tracker leg skipped: no symlink privilege (EPERM)");
     }
     if (linked) {
       process.env.CAREER_OPS_TRACKER = path.join(root, "linked.md");
@@ -235,7 +233,7 @@ test("Sankey and cumulative tiles read the same active tracker's ledger", { skip
   }
 });
 
-test("readStatusLog: an unreadable log throws instead of reading as empty", { skip: skipTs }, () => {
+test("readStatusLog: an unreadable log throws instead of reading as empty", () => {
   // A directory where the file should be: EISDIR, a read failure that is not ENOENT.
   withDataRoot(
     (data) => fs.mkdirSync(path.join(data, "status-log.tsv")),

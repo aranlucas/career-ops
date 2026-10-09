@@ -6,9 +6,9 @@
 // #3529 made merge-tracker re-sort that file by # on every write, which would
 // have changed the card set with no change to this component.
 //
-// Run:  node --test tests/lib/awaiting-order.test.mjs
+// Run:  npm test -- tests/lib/awaiting-order.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { pickAwaitingDecision } from "../../src/lib/home/awaiting.mjs";
 

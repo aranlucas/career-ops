@@ -2,9 +2,9 @@
 // Imports directly from spawn-cli.mjs (the single source of truth) so the
 // test and production code can never drift out of sync.
 //
-// Run:  node --test tests/lib/spawn-cli.test.mjs
+// Run:  npm test -- tests/lib/spawn-cli.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { spawnHeadlessCli } from "../../src/lib/spawn-cli.mjs";
 import { CAPS } from "../../src/lib/worker-capabilities.mjs";

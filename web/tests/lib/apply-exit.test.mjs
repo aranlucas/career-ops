@@ -7,9 +7,9 @@
 // user never was. Neither is observable from a component test, so the decisions
 // live here where every branch can be pinned.
 //
-// Run:  node --test tests/lib/apply-exit.test.mjs
+// Run:  npm test -- tests/lib/apply-exit.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { needsLeaveConfirmation, resolveReturnPath, resolveLateSession, DEFAULT_RETURN_PATH } from "../../src/lib/apply/exit.mjs";
 

@@ -12,9 +12,9 @@
 // would pass just as happily. Verified red by hand: swap withFollowupsLock for a
 // passthrough and the "both survive" assertion fails.
 //
-// Run:  node --test tests/lib/followups-lock.test.mjs
+// Run:  npm test -- tests/lib/followups-lock.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -83,7 +83,7 @@ test("WITHOUT a lock, two concurrent pin writers lose one update silently", asyn
   }
 });
 
-test("WITH the core lock, both pins survive", { skip: skipCore }, async () => {
+test.skipIf(Boolean(skipCore))("WITH the core lock, both pins survive", async () => {
   const { root, file } = makeFollowups();
   const guarded = (appNum, date, pauseMs) =>
     core.withFollowupsLock(file, () => addPin(file, appNum, date, pauseMs), { timeoutMs: 5_000, retryMs: 25 });
@@ -95,7 +95,7 @@ test("WITH the core lock, both pins survive", { skip: skipCore }, async () => {
   }
 });
 
-test("the lock is released on a throwing path, not just the happy one", { skip: skipCore }, async () => {
+test.skipIf(Boolean(skipCore))("the lock is released on a throwing path, not just the happy one", async () => {
   // A leaked lock on a long-lived server is worse than the bug: the holder's pid
   // stays alive, so the core's stale-recovery will not reclaim it and the user's
   // own CLI is locked out until staleMs.

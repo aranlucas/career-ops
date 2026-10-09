@@ -17,14 +17,14 @@
  * So these read the source, in the style of config-form-persist-wiring.test.mjs,
  * decision-card-cta.test.mjs and first-run-copy.test.mjs.
  *
- * Run (from web/):  node --test tests/lib/apply-prefill-wiring.test.mjs
+ * Run (from web/):  npm test -- tests/lib/apply-prefill-wiring.test.mjs
  */
 
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const route = readFileSync(join(root, "src/app/api/apply/prefill/route.ts"), "utf8");

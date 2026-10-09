@@ -17,10 +17,10 @@
  * data/pdf-index.tsv and answers with the row's readable rendering, so the
  * planner gets a document it can actually open.
  *
- * Run (from web/):  node --test tests/lib/apply-prefill-cv-source.test.mjs
+ * Run (from web/):  npm test -- tests/lib/apply-prefill-cv-source.test.mjs
  */
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";

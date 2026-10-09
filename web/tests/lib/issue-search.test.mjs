@@ -6,9 +6,9 @@
 // stale `repo:` qualifier began returning 422, the reporter told users nothing
 // similar was filed — calmly, with no error — for two days.
 //
-// Run:  node --test tests/lib/issue-search.test.mjs
+// Run:  npm test -- tests/lib/issue-search.test.mjs
 
-import { test, beforeEach } from "node:test";
+import { test, beforeEach } from "vitest";
 import assert from "node:assert/strict";
 import { searchIssues, _resetCache } from "../../src/lib/beta/issue-search.mjs";
 

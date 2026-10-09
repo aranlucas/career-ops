@@ -4,9 +4,9 @@
 // EventEmitter-based child process — no real generate-pdf.mjs/mark-pdf-
 // ready.mjs subprocess is ever spawned by these tests.
 //
-// Run:  node --test tests/lib/pdf-render.test.mjs
+// Run:  npm test -- tests/lib/pdf-render.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
 import { mkdtempSync, writeFileSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";

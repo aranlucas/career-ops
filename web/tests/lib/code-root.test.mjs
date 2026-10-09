@@ -1,10 +1,10 @@
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import "../helpers/web-ts-alias-loader.mjs";
 import { resolveCodeRoot, resolveRootScript } from "../../src/lib/core/code-root.mjs";
+import { rootScript } from "../../src/lib/career-ops.ts";
 
 const CORE = path.resolve(import.meta.dirname, "../../..");
 
@@ -50,9 +50,7 @@ test("blank CAREER_OPS_CODE_ROOT falls back like an unset var", () => {
 // The helpers above kept passing while rootScript() joined their absolute result
 // onto the checkout again (`<checkout>/<checkout>/doctor.mjs`), so it is tested
 // here as a route runs it: real process.cwd() and process.env. It lives in
-// career-ops.ts, reached through the shared @/ alias hook.
-const skipTs = !process.features?.typescript && "this Node cannot import career-ops.ts (no type stripping)";
-const { rootScript } = skipTs ? {} : await import("@/lib/career-ops");
+// career-ops.ts, loaded through Vitest's TypeScript and tsconfig-path support.
 
 function tmpdir(prefix) {
   // realpath: macOS symlinks /var → /private/var, and process.cwd() reports the
@@ -87,13 +85,13 @@ function rootScriptFrom(cwd, env) {
   }
 }
 
-test("rootScript: by default the checkout web/ lives in, even with CAREER_OPS_ROOT on a data-only dir", { skip: skipTs }, () => {
+test("rootScript: by default the checkout web/ lives in, even with CAREER_OPS_ROOT on a data-only dir", () => {
   const checkout = fakeCheckout();
   const dataOnly = tmpdir("code-root-data-");
   assert.equal(rootScriptFrom(path.join(checkout, "web"), { CAREER_OPS_ROOT: dataOnly }), path.join(checkout, "doctor.mjs"));
 });
 
-test("rootScript: the absolute script path is returned once, not joined onto the checkout again", { skip: skipTs }, () => {
+test("rootScript: the absolute script path is returned once, not joined onto the checkout again", () => {
   const checkout = fakeCheckout();
   const script = rootScriptFrom(path.join(checkout, "web"), {});
   assert.ok(path.isAbsolute(script), script);
@@ -101,7 +99,7 @@ test("rootScript: the absolute script path is returned once, not joined onto the
   assert.ok(fs.existsSync(script), `expected an existing script, got ${script}`);
 });
 
-test("rootScript: CAREER_OPS_CODE_ROOT overrides the checkout", { skip: skipTs }, () => {
+test("rootScript: CAREER_OPS_CODE_ROOT overrides the checkout", () => {
   const checkout = fakeCheckout();
   const engine = fakeCheckout();
   assert.equal(rootScriptFrom(path.join(checkout, "web"), { CAREER_OPS_CODE_ROOT: engine }), path.join(engine, "doctor.mjs"));

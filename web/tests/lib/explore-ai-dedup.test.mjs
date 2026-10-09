@@ -8,9 +8,9 @@
 // path (distinct only by `?gh_jid=`) collapsed onto one dedup key and every
 // opening after the first was silently absent from AI Discover results.
 //
-// Run:  node --test tests/lib/explore-ai-dedup.test.mjs
+// Run:  npm test -- tests/lib/explore-ai-dedup.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { makeAiStreamParser, canon } from "../../src/lib/explore-ai.ts";
 

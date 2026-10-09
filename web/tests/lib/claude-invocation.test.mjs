@@ -5,9 +5,9 @@
 // source-text versions of this guard were defeated. Value assertions cannot rot
 // that way, so each case below pins a capability rather than a spelling.
 //
-// Run:  node --test tests/lib/claude-invocation.test.mjs
+// Run:  npm test -- tests/lib/claude-invocation.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import {
   TOOL_SCOPES,

@@ -2,9 +2,9 @@
 // Imports directly from job-error-hint.mjs (the single source of truth) so the
 // test and production code can never drift out of sync.
 //
-// Run:  node --test tests/lib/job-error-hint.test.mjs
+// Run:  npm test -- tests/lib/job-error-hint.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { jobErrorHint } from "../../src/lib/job-error-hint.mjs";
 

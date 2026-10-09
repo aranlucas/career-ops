@@ -2,9 +2,9 @@
 // Imports directly from report-sections.mjs (the single source of truth) so the
 // test and production code can never drift out of sync.
 //
-// Run:  node --test tests/lib/report-sections.test.mjs
+// Run:  npm test -- tests/lib/report-sections.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import {
   APPLY_LINE,

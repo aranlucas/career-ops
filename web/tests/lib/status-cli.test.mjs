@@ -5,9 +5,9 @@
 // Imports directly from status-cli.mjs (the single source of truth) so the test
 // and the route can never drift.
 //
-// Run:  node --test tests/lib/status-cli.test.mjs
+// Run:  npm test -- tests/lib/status-cli.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { parseCliJson, trackerRowArg, clientErrorMessage } from "../../src/lib/status-cli.mjs";
 

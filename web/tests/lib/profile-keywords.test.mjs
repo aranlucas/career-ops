@@ -8,9 +8,9 @@
 // two shapes that actually exist on disk — the shipped example, and what the
 // app's own writer emits.
 //
-// Run:  node --test tests/lib/profile-keywords.test.mjs
+// Run:  npm test -- tests/lib/profile-keywords.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import * as yaml from "js-yaml";

@@ -9,7 +9,7 @@
 // Run:  node --experimental-strip-types --test tests/lib/saved-cli-resolve.test.mjs
 //       (or `npm test`, which passes the flag; it is unflagged from Node 22.18)
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 
 const { resolveCliId } = await import("../../src/lib/saved-cli.ts");

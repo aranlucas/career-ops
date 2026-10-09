@@ -12,9 +12,9 @@
 // Same TypeScript import technique as apply-planner-fencing.test.mjs: skipped
 // on a Node without type stripping or module.registerHooks.
 //
-// Run:  node --test tests/lib/apply-agent-interpret-fencing.test.mjs
+// Run:  npm test -- tests/lib/apply-agent-interpret-fencing.test.mjs
 
-import { test } from "node:test";
+import { onTestFinished, test } from "vitest";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -71,7 +71,7 @@ const ONE_CONTROL = [{ n: 0, tag: "input", type: "text", name: "first", placehol
  * JSON, so the interpreter's "launched but nothing usable" path is reachable
  * without a real CLI. Restores PATH and CAREER_OPS_ROOT afterwards.
  */
-function withStubClaude(t) {
+function withStubClaude() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "career-ops-agent-interpret-"));
   const log = path.join(dir, "launches.log");
   const bin = path.join(dir, "claude");
@@ -80,7 +80,7 @@ function withStubClaude(t) {
   const saved = { PATH: process.env.PATH, CAREER_OPS_ROOT: process.env.CAREER_OPS_ROOT };
   process.env.PATH = dir;
   process.env.CAREER_OPS_ROOT = dir;
-  t.after(() => {
+  onTestFinished(() => {
     process.env.PATH = saved.PATH;
     if (saved.CAREER_OPS_ROOT === undefined) delete process.env.CAREER_OPS_ROOT;
     else process.env.CAREER_OPS_ROOT = saved.CAREER_OPS_ROOT;
@@ -89,7 +89,7 @@ function withStubClaude(t) {
   return { launches: () => (fs.existsSync(log) ? fs.readFileSync(log, "utf8").trim().split("\n").filter(Boolean).length : 0) };
 }
 
-test("an unknown CLI id never launches anything and never touches the frame", { skip }, async () => {
+test.skipIf(Boolean(skip))("an unknown CLI id never launches anything and never touches the frame", async () => {
   // Given a cliId nobody has registered and a frame that would blow up if asked
   const result = await interpretFormWithAgent(frameOf(new Error("must not be evaluated")), "no-such-cli", "Form");
 
@@ -97,9 +97,9 @@ test("an unknown CLI id never launches anything and never touches the frame", { 
   assert.deepEqual(result, { fields: [], spawned: false });
 });
 
-test("a form with no controls is not handed to the CLI: attempted, not launched", { skip: skip || (process.platform === "win32" && "sh fixture") }, async (t) => {
+test.skipIf(Boolean(skip || process.platform === "win32"))("a form with no controls is not handed to the CLI: attempted, not launched", async () => {
   // Given a resolvable claude (stub) and a frame with nothing to interpret
-  const stub = withStubClaude(t);
+  const stub = withStubClaude();
 
   const result = await interpretFormWithAgent(frameOf([]), "claude", "Form");
 
@@ -108,9 +108,9 @@ test("a form with no controls is not handed to the CLI: attempted, not launched"
   assert.equal(stub.launches(), 0, "the CLI was never launched");
 });
 
-test("a launched CLI that returns nothing usable still reports the launch", { skip: skip || (process.platform === "win32" && "sh fixture") }, async (t) => {
+test.skipIf(Boolean(skip || process.platform === "win32"))("a launched CLI that returns nothing usable still reports the launch", async () => {
   // Given a resolvable claude (stub that prints no JSON) and one control
-  const stub = withStubClaude(t);
+  const stub = withStubClaude();
 
   const result = await interpretFormWithAgent(frameOf(ONE_CONTROL), "claude", "Form");
 

@@ -8,9 +8,9 @@
 // gitignored, so the repo's `eol=lf` .gitattributes policy does not protect the
 // user's own pipeline.md from a CRLF writer on Windows.
 //
-// Run:  node --test tests/lib/pipeline-crlf.test.mjs
+// Run:  npm test -- tests/lib/pipeline-crlf.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { parseInbox, splitLines } from "../../src/lib/pipeline-table.mjs";
 

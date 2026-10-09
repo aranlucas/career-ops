@@ -2,9 +2,9 @@
 // Imports directly from funnel-tiles.mjs (the single source of truth) so the
 // test and production code can never drift out of sync.
 //
-// Run:  node --test tests/lib/funnel-tiles.test.mjs
+// Run:  npm test -- tests/lib/funnel-tiles.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";

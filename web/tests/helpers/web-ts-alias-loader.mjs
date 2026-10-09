@@ -30,7 +30,7 @@ if (!globalThis.__careerOpsWebAliasRegistered) {
 }
 
 // Anchored to this file, not process.cwd(): `npm test` runs from web/ while a
-// root-level `node --test web/tests/…` runs from the repo root, and the alias
+// root-level `npm --prefix web test -- tests/…` runs from the repo root, and the alias
 // must resolve to the same web/src either way.
 const WEB_SRC = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "src");
 const HAS_EXT = /\.(m?[jt]sx?|json)$/i;

@@ -13,9 +13,9 @@
 // its fallback. Using a toy normalizer here would test a key helper that does
 // not exist in production.
 //
-// Run:  node --test tests/lib/whats-new-suppression.test.mjs
+// Run:  npm test -- tests/lib/whats-new-suppression.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { evaluatedKeys, isEvaluated, suppressionKey } from "../../src/lib/whats-new-suppression.mjs";
 import { normalizeTextKey as norm } from "../../src/lib/core/normalize-text-key.mjs";

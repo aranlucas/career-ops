@@ -3,10 +3,10 @@
 // applyInboxSkip / setInboxSkip flip `- [ ]` ↔ `- [x]` for one posting URL and
 // leave every other line byte-identical. The URL is a matcher, never a path.
 //
-// Run (from web/, as `npm test` does):  node --test tests/lib/inbox-skip.test.mjs
-// From the repo root:                   node --test web/tests/lib/inbox-skip.test.mjs
+// Run (from web/, as `npm test` does):  npm test -- tests/lib/inbox-skip.test.mjs
+// From the repo root:                   npm --prefix web test -- tests/lib/inbox-skip.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -165,7 +165,7 @@ test("a URL that only appears under Processed does not match as inbox Skip", () 
   assert.equal(result.error, "unmatched");
 });
 
-test("setInboxSkip writes the fixture file, then undo restores it", { skip: HAS_LOCK ? false : "pipeline-lock.mjs not resolvable" }, async () => {
+test.skipIf(!HAS_LOCK)("setInboxSkip writes the fixture file, then undo restores it", async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "inbox-skip-"));
   const file = path.join(dir, "pipeline.md");
   fs.writeFileSync(file, FIXTURE);

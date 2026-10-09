@@ -9,9 +9,9 @@
 // is deliberate: a regex over `bin: "..."` is enough to catch a forgotten entry,
 // and it keeps the guard free of a build step.
 //
-// Run:  node --test tests/lib/clis-coverage.test.mjs
+// Run:  npm test -- tests/lib/clis-coverage.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";

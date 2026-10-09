@@ -5,15 +5,12 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { test } from "node:test";
+import { onTestFinished, test } from "vitest";
 
 const url = process.env.LOADING_TRANSITION_TEST_URL;
 const root = process.env.LOADING_TRANSITION_TEST_ROOT;
 
-test("loading transitions keep context and only latest requests settle Today", {
-  skip: !url || !root,
-  timeout: 120_000,
-}, async (t) => {
+test.skipIf(!url || !root)("loading transitions keep context and only latest requests settle Today", { timeout: 120_000 }, async () => {
   const origin = new URL(url);
   assert.ok(["localhost", "127.0.0.1", "[::1]"].includes(origin.hostname));
   const relative = path.relative(os.tmpdir(), fs.realpathSync(root));
@@ -25,7 +22,7 @@ test("loading transitions keep context and only latest requests settle Today", {
 
   const { chromium } = await import("playwright-core");
   const browser = await chromium.launch({ channel: "chrome", headless: true });
-  t.after(() => browser.close());
+  onTestFinished(() => browser.close());
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -45,6 +42,15 @@ test("loading transitions keep context and only latest requests settle Today", {
     return { promise, release };
   }
 
+  async function scenario(_name, run) {
+    const cleanups = [];
+    try {
+      await run((cleanup) => cleanups.push(cleanup));
+    } finally {
+      for (const cleanup of cleanups.reverse()) await cleanup();
+    }
+  }
+
   // Put every fictional row beyond the awaiting-decision queue so a false
   // all-clear is observable; writes still use the canonical status API.
   // Check the server, not just the local marker: a misconfigured test URL
@@ -62,12 +68,12 @@ test("loading transitions keep context and only latest requests settle Today", {
   }
   const baseline = fs.readFileSync(tracker, "utf8");
 
-  await t.test("Pipeline filter keeps heading, search, tabs and result skeletons", async (subtest) => {
+  await scenario("Pipeline filter keeps heading, search, tabs and result skeletons", async (onScenarioFinished) => {
     await page.goto(`${origin.origin}/pipeline?tab=ALL`);
     await page.getByRole("button", { name: /^Edit status/ }).first().waitFor();
     const pending = gate();
     let held = false;
-    subtest.after(async () => { pending.release(); await page.unrouteAll({ behavior: "wait" }); });
+    onScenarioFinished(async () => { pending.release(); await page.unrouteAll({ behavior: "wait" }); });
     await page.route("**/pipeline?**", async (route) => {
       if (route.request().headers().rsc === "1") { held = true; await pending.promise; }
       await route.continue();
@@ -86,12 +92,12 @@ test("loading transitions keep context and only latest requests settle Today", {
     assert.equal(await page.getByRole("button", { name: /^Edit status/ }).count(), 3);
   });
 
-  await t.test("Follow-ups query transition retains page context", async (subtest) => {
+  await scenario("Follow-ups query transition retains page context", async (onScenarioFinished) => {
     await page.goto(`${origin.origin}/followups`);
     await page.locator("tbody tr").first().waitFor();
     const pending = gate();
     let held = false;
-    subtest.after(async () => { pending.release(); await page.unrouteAll({ behavior: "wait" }); });
+    onScenarioFinished(async () => { pending.release(); await page.unrouteAll({ behavior: "wait" }); });
     await page.route("**/followups?**", async (route) => {
       if (route.request().headers().rsc === "1") { held = true; await pending.promise; }
       await route.continue();
@@ -110,11 +116,11 @@ test("loading transitions keep context and only latest requests settle Today", {
 
   const emptyFollowups = { available: true, entries: [], metadata: { overdue: 0, urgent: 0 }, nextUpcoming: null };
   const emptyFresh = { offers: [], count: 0 };
-  await t.test("failed fetch never says all-clear and Retry restarts loading", async (subtest) => {
+  await scenario("failed fetch never says all-clear and Retry restarts loading", async (onScenarioFinished) => {
     const pending = gate();
     let retry = false;
     const seen = new Set();
-    subtest.after(async () => { pending.release(); await page.unrouteAll({ behavior: "wait" }); });
+    onScenarioFinished(async () => { pending.release(); await page.unrouteAll({ behavior: "wait" }); });
     await page.route(/\/api\/(followups|whats-new)(\?|$)/, async (route) => {
       const endpoint = new URL(route.request().url()).pathname;
       seen.add(endpoint);
@@ -138,8 +144,8 @@ test("loading transitions keep context and only latest requests settle Today", {
     assert.equal(await updatesAlert.count(), 0);
   });
 
-  await t.test("HTTP 200 cadence-unavailable is an error, not an empty queue", async (subtest) => {
-    subtest.after(() => page.unrouteAll({ behavior: "wait" }));
+  await scenario("HTTP 200 cadence-unavailable is an error, not an empty queue", async (onScenarioFinished) => {
+    onScenarioFinished(() => page.unrouteAll({ behavior: "wait" }));
     await page.route(/\/api\/(followups|whats-new)(\?|$)/, (route) => route.fulfill({ json:
       new URL(route.request().url()).pathname === "/api/followups"
         ? { available: false, metadata: null, entries: [], nextUpcoming: null }
@@ -152,11 +158,11 @@ test("loading transitions keep context and only latest requests settle Today", {
     assert.equal(await page.getByText("You're all caught up.", { exact: true }).count(), 0);
   });
 
-  await t.test("older success cannot end a newer load; older failure cannot replace newer success", async (subtest) => {
+  await scenario("older success cannot end a newer load; older failure cannot replace newer success", async (onScenarioFinished) => {
     const gates = new Map();
     const counts = new Map();
     let completed = 0;
-    subtest.after(async () => { for (const pending of gates.values()) pending.release(); await page.unrouteAll({ behavior: "wait" }); });
+    onScenarioFinished(async () => { for (const pending of gates.values()) pending.release(); await page.unrouteAll({ behavior: "wait" }); });
     await page.route(/\/api\/(followups|whats-new)(\?|$)/, async (route) => {
       const endpoint = new URL(route.request().url()).pathname;
       const index = (counts.get(endpoint) ?? 0) + 1;

@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -37,7 +37,7 @@ test("web tracker and ledger follow the core resolver across supported layouts",
     } catch (e) {
       if (e?.code !== "EPERM" || e?.syscall !== "symlink") throw e;
       linked = false;
-      t.diagnostic("symlinked-tracker leg skipped: no symlink privilege (EPERM)");
+      console.info("symlinked-tracker leg skipped: no symlink privilege (EPERM)");
     }
     if (linked) {
       process.env.CAREER_OPS_TRACKER = path.join(root, "linked.md");

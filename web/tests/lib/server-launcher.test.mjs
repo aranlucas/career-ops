@@ -15,9 +15,9 @@
 // root because test-all.mjs's web-suite parity check fails any web suite outside
 // tests/lib.
 //
-// Run:  node --test tests/lib/server-launcher.test.mjs
+// Run:  npm test -- tests/lib/server-launcher.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";

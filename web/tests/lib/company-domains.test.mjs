@@ -12,9 +12,9 @@
 // two prior instances; this was a third, in the one place where the result is
 // cached forever.
 //
-// Run:  node --test tests/lib/company-domains.test.mjs
+// Run:  npm test -- tests/lib/company-domains.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { companyDomains } from "../../src/lib/core/company-domains.mjs";
 import { COMPANY_KEY_VERSION } from "../../src/lib/core/logo-cache-key.mjs";

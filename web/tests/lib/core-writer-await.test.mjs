@@ -14,10 +14,10 @@
 // self-checks, so an edit that renames the writers fails loudly rather than
 // silently matching nothing.
 //
-// Run (from web/, as `npm test` does):  node --test tests/lib/core-writer-await.test.mjs
-// From the repo root:                   node --test web/tests/lib/core-writer-await.test.mjs
+// Run (from web/, as `npm test` does):  npm test -- tests/lib/core-writer-await.test.mjs
+// From the repo root:                   npm --prefix web test -- tests/lib/core-writer-await.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";

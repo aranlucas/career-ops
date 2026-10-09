@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { applicationKey, applySavedStatus, saveStatus } from "../../src/lib/pipeline-status.mjs";
 
 const row = { n: "11", company: "Fixture Alpha", role: "Engineer", date: "2026-10-02", report: "", status: "Evaluated" };

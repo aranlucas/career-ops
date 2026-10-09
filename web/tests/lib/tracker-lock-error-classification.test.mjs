@@ -14,9 +14,9 @@
 // plain Error with `.code = 'LOCK_TIMEOUT'` instead (tracker-utils.mjs), so
 // the discriminator here is `err.code === 'LOCK_TIMEOUT'`.
 //
-// Run:  node --test tests/lib/tracker-lock-error-classification.test.mjs
+// Run:  npm test -- tests/lib/tracker-lock-error-classification.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -93,7 +93,7 @@ try {
   else throw err;
 }
 
-test("the core: a genuine ENOENT from acquireTrackerLock is NOT tagged LOCK_TIMEOUT", { skip: skipCore }, async () => {
+test.skipIf(Boolean(skipCore))("the core: a genuine ENOENT from acquireTrackerLock is NOT tagged LOCK_TIMEOUT", async () => {
   const unreachableLockDir = path.join(os.tmpdir(), `no-such-parent-${Date.now()}-xyz`, "lockdir");
   await assert.rejects(
     () => acquireTrackerLock(unreachableLockDir, { timeoutMs: 2_000, retryMs: 50 }),
@@ -117,12 +117,10 @@ const cannotRefuse =
     ? "running as root, permission bits do not apply"
     : process.platform === "win32"
       ? "win32: a POSIX mode cannot deny mkdir, so the refusal never happens"
-      : false; // NOT null — node:test's `skip` option runs the body but still
-        // reports SKIP for a null value, silently discarding the result.
+    : false;
 
-test(
+test.skipIf(Boolean(skipCore || cannotRefuse))(
   "the core: a PERSISTENT EACCES/EPERM is retried and eventually surfaces as LOCK_TIMEOUT, not thrown raw",
-  { skip: skipCore || cannotRefuse },
   async () => {
     // This is the behavior the PR discussion documents but which had no
     // executable coverage: unlike ENOENT (immediate, untagged) an EACCES/EPERM

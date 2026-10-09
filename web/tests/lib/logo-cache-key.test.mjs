@@ -5,9 +5,9 @@
 // it must fold brand-name variants together, must never fold two different
 // companies together, and must change whenever candidate generation changes.
 //
-// Run:  node --test tests/lib/logo-cache-key.test.mjs
+// Run:  npm test -- tests/lib/logo-cache-key.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { COMPANY_KEY_VERSION, companyCacheKey } from "../../src/lib/core/logo-cache-key.mjs";
 

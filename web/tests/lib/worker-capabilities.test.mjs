@@ -6,9 +6,9 @@
 // These assert on exported VALUES rather than on any caller's source text, the
 // same discipline claude-invocation.test.mjs states in its header.
 //
-// Run:  node --test tests/lib/worker-capabilities.test.mjs
+// Run:  npm test -- tests/lib/worker-capabilities.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { CAPS, KNOWN_KINDS, capabilitiesFor } from "../../src/lib/worker-capabilities.mjs";
 import { toolScopeFor, grantsWriteCapability, toolNames } from "../../src/lib/claude-invocation.mjs";

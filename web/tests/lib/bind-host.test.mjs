@@ -12,9 +12,9 @@
 //     CAREER_OPS_WEB_ALLOWED_HOSTS=off bound every interface;
 //   - naming one LAN address bound every interface rather than that address.
 //
-// Run:  node --test tests/lib/bind-host.test.mjs
+// Run:  npm test -- tests/lib/bind-host.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { parseAllowedHosts, isLoopbackHost } from "../../src/lib/origin-guard.mjs";
 import {

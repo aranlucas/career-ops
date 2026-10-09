@@ -13,9 +13,9 @@
 // so the module is imported for real: Node strips the type annotations, and a
 // resolve hook maps the `@/` alias that tsconfig gives the app to src/.
 //
-// Run:  node --test tests/lib/apply-planner-fencing.test.mjs
+// Run:  npm test -- tests/lib/apply-planner-fencing.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -67,7 +67,7 @@ async function plan({ cliId, spec, binPath }) {
   return { run, lines };
 }
 
-test("a runtime argv that contradicts the capability record is refused, not spawned", { skip }, async () => {
+test.skipIf(Boolean(skip))("a runtime argv that contradicts the capability record is refused, not spawned", async () => {
   // Given: a Codex spec whose argv already spells its own sandbox — the exact
   // shape the fencer exists to refuse — and a binary that must never run.
   const mustNotRun = path.join(os.tmpdir(), `career-ops-planner-must-not-run-${process.pid}`);
@@ -93,7 +93,7 @@ test("a runtime argv that contradicts the capability record is refused, not spaw
   assert.equal(lines.some((l) => l.startsWith("spawn error")), false, "the binary was never spawned");
 });
 
-test("a runtime with no verified fencing mechanism runs and the notice reaches the log", { skip }, async () => {
+test.skipIf(Boolean(skip))("a runtime with no verified fencing mechanism runs and the notice reaches the log", async () => {
   // Given: gemini has no fencer, so its argv passes through untouched and the
   // run is graded with a notice; a node one-liner stands in for the binary.
   const spec = {
@@ -113,7 +113,7 @@ test("a runtime with no verified fencing mechanism runs and the notice reaches t
   );
 });
 
-test("the Claude planner argv carries the derived deny list, not a hand-written one", { skip: skip || (process.platform === "win32" && "sh fixture") }, async () => {
+test.skipIf(Boolean(skip || process.platform === "win32"))("the Claude planner argv carries the derived deny list, not a hand-written one", async () => {
   // Given: an executable that echoes its argv, one per line, so the fenced
   // command line the planner actually spawns can be read back.
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "career-ops-planner-argv-"));

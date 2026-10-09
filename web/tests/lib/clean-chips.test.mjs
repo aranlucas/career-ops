@@ -2,9 +2,9 @@
 // Imports directly from clean-chips.mjs (the single source of truth) so the
 // test and production code can never drift out of sync.
 //
-// Run:  node --test tests/lib/clean-chips.test.mjs
+// Run:  npm test -- tests/lib/clean-chips.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import * as yaml from "js-yaml";

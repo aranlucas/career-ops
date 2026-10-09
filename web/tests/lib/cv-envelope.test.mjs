@@ -8,9 +8,9 @@
 // unintended bytes through, or lets a malformed run look successful, puts the
 // agent back in charge of what lands on disk.
 //
-// Run:  node --test tests/lib/cv-envelope.test.mjs
+// Run:  npm test -- tests/lib/cv-envelope.test.mjs
 
-import { test } from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { parseCvEnvelope, createCvEnvelopeFilter } from "../../src/lib/cv-envelope.mjs";
 

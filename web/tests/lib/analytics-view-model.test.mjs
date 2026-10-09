@@ -6,7 +6,7 @@
 // into a confident one. These assertions pin the gating, not the arithmetic:
 // the arithmetic is the core's and is not reimplemented here.
 
-import test from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { progressModel, statsModel, rateOrNull, isUnlabelled } from "../../src/lib/analytics/view-model.mjs";
 
