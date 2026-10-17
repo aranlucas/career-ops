@@ -279,16 +279,39 @@ for (const [label, suffix] of [["recovery guard", ".recovery.lock"], ["resource 
     });
   }
 
-  test(`${label} mkdir still throws a persistent Windows EPERM once the deadline passes`, async () => {
+  test(`${label} mkdir still throws a persistent Windows EPERM once the deadline passes`, async (t) => {
     const temp = fs.mkdtempSync(path.join(os.tmpdir(), "career-ops-scheduled-mkdir-deadline-"));
     const resource = path.join(temp, "resource");
     const injected = injectMkdirFailures(`${resource}${suffix}`, "EPERM");
     try {
+      // Filesystem latency must not spend the retry budget. Advance the clock
+      // and retry timers together, yielding only to drain async continuations.
+      t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: 1_000 });
+      let entered = false;
+      let settled = false;
+      const pending = withResourceLock(resource, async () => { entered = true; }, { platform: "win32", retryMs: 1, timeoutMs: 40 });
+      pending.then(() => { settled = true; }, () => { settled = true; });
+      await new Promise((resolve) => setImmediate(resolve));
+      assert.equal(injected.attempts, 1);
+      assert.equal(settled, false, "the guard gave up without retrying");
+
+      t.mock.timers.tick(39);
+      await new Promise((resolve) => setImmediate(resolve));
+      assert.equal(injected.attempts, 2, "the guard did not retry while time remained");
+      assert.equal(settled, false, "the guard gave up before the deadline");
+
+      t.mock.timers.tick(1);
+      await new Promise((resolve) => setImmediate(resolve));
+      assert.equal(settled, true, "the guard ignored the deadline");
       await assert.rejects(
-        withResourceLock(resource, async () => {}, { platform: "win32", retryMs: 1, timeoutMs: 40 }),
+        pending,
         (error) => error.code === "EPERM",
       );
-      assert.ok(injected.attempts > 1, "the guard gave up without retrying");
+      assert.equal(injected.attempts, 3);
+      assert.equal(entered, false);
+      t.mock.timers.tick(40);
+      await new Promise((resolve) => setImmediate(resolve));
+      assert.equal(injected.attempts, 3, "the guard retried after the deadline failure");
       assert.equal(fs.existsSync(`${resource}.lock`), false);
       assert.equal(fs.existsSync(`${resource}.recovery.lock`), false);
     } finally {
